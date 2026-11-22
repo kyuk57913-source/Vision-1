@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vision">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@400;500;600;700&family=Urbanist:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>(function(){try{var v=localStorage.getItem("pnl-lite"),m=navigator.deviceMemory,c=navigator.hardwareConcurrency,auto=m?m<=4:(c?c<=4:false);window.__autoLite=auto;if(v==="1"||(v===null&&auto))document.documentElement.classList.add("lite")}catch(e){}})();</script>
+<script>
+/* Vision look: one fixed DeFi-style palette (no theme picker) */
+(function(){
+  var h2r=function(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]};
+  var r2h=function(a){return '#'+a.map(function(v){v=Math.max(0,Math.min(255,Math.round(v)));return (v<16?'0':'')+v.toString(16)}).join('')};
+  var mix=function(a,b,t){var x=h2r(a),y=h2r(b);return r2h([x[0]+(y[0]-x[0])*t,x[1]+(y[1]-x[1])*t,x[2]+(y[2]-x[2])*t])};
+  var rgb=function(h){return h2r(h).join(',')};
+  var on=function(h){var c=h2r(h).map(function(v){v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});var L=.2126*c[0]+.7152*c[1]+.0722*c[2];return 1.05/(L+.05)>=(L+.05)/.05?'#FFFFFF':'#0B0F14'};
+  var TH={vision:{id:'vision',name:'Vision',mode:'dark',bg:'#0A1220',surface:'#111C30',line:'#1E2D47',ink:'#F2F6FC',muted:'#8A98B2',accent:'#2F73FF',hi:'#5B9BFF',win:'#19D3A2',loss:'#FF5F78'},morpho:{id:'morpho',name:'Morpho Classic',mode:'dark',bg:'#0E0E0F',surface:'#171718',line:'#2A2A2D',ink:'#F4F4F5',muted:'#8E8E96',accent:'#2F6BFF',hi:'#5B8DFF',win:'#19D3A2',loss:'#FF5F78'}};var KEY='pnl-theme',cur='vision';try{var sv=localStorage.getItem(KEY);if(TH[sv])cur=sv}catch(e){}var T=TH[cur];
+  function vars(t){
+    var a=t.accent,v={};
+    v['--bg']=t.bg; v['--surface']=t.surface; v['--line']=t.line; v['--ink']=t.ink; v['--muted']=t.muted;
+    v['--btn']=a; v['--btn-ink']='#FFFFFF'; v['--curve']=t.hi; v['--accent']=t.hi;
+    v['--tint']=rgb(t.hi); v['--tint-soft']=rgb(mix(a,t.bg,.4));
+    v['--win']=t.win; v['--loss']=t.loss; v['--win-rgb']=rgb(t.win); v['--loss-rgb']=rgb(t.loss);
+    v['--glow']='none'; v['--metal']=t.line; v['--metal-soft']=t.line; v['--conic']=a;
+    for(var q=0;q<9;q++)v['--m'+q]=mix(a,t.ink,(q%3)*.12);
+    return v;
+  }
+  var KEYS=Object.keys(vars(T));
+  function apply(){
+    var r=document.documentElement,m=document.querySelector('meta[name="theme-color"]'),v=vars(T);
+    KEYS.forEach(function(k){r.style.setProperty(k,v[k])});
+    r.setAttribute('data-theme','vision');r.setAttribute('data-vt',T.id);r.setAttribute('data-mode','dark');r.style.colorScheme='dark';
+    if(m)m.setAttribute('content',T.bg);
+  }
+  window.PnlTheme={list:[TH.vision,TH.morpho],find:function(){return T},get:function(){return T.id},set:function(id){if(!TH[id])return;T=TH[id];try{localStorage.setItem(KEY,id)}catch(e){}apply()},apply:apply,resolve:function(t){return t},white:function(){return false},setWhite:function(){},mix:mix,on:on};
+  try{apply()}catch(e){}
+})();
+</script>
+<title>Vision</title>
+<link rel="stylesheet" href="styles.css">
+
+<script>
+/* native full-screen: Android app passes real status/nav bar sizes, browsers fall back to env() */
+(function(){
+  var r=document.documentElement;
+  function set(t,b){r.style.setProperty('--sat',t+'px');r.style.setProperty('--sab',b+'px')}
+  window.__setInsets=set;
+  try{if(window.VisionInsets)set(VisionInsets.top(),VisionInsets.bottom())}catch(e){}
+  function icons(){
+    try{
+      if(!window.VisionInsets||!VisionInsets.setDarkIcons)return;
+      var c=getComputedStyle(r).getPropertyValue('--bg').trim();
+      if(c.charAt(0)!=='#'||c.length<7)return;
+      var v=[1,3,5].map(function(i){return parseInt(c.substr(i,2),16)/255});
+      VisionInsets.setDarkIcons((.2126*v[0]+.7152*v[1]+.0722*v[2])>.5);
+    }catch(e){}
+  }
+  var t;function later(){clearTimeout(t);t=setTimeout(icons,60)}
+  try{new MutationObserver(later).observe(r,{attributes:true,attributeFilter:['style','class','data-theme']})}catch(e){}
+  window.addEventListener('load',function(){later();setTimeout(icons,800)});
+})();
+</script>
+
+<script>try{if(localStorage.getItem('pnl-lock'))document.documentElement.classList.add('locked')}catch(e){}</script>
+
+
+
+<script>try{localStorage.removeItem('pnl-space')}catch(e){}</script>
+
+
+
+
+</head>
+<body>
+<div id="spacebg" aria-hidden="true"><span class="bh" style="--s:112px;left:72vw;top:11vh"><b></b><i></i></span></div>
+<div id="splash" aria-hidden="true"><span class="sp-o"><i></i><b></b><i></i></span><h1 class="sp-t"><span class="sp-a"><span class="sp-ch" style="--i:0">K</span><span class="sp-ch" style="--i:1">e</span><span class="sp-ch" style="--i:2">e</span><span class="sp-ch" style="--i:3">p</span><span class="sp-ch" style="--i:4">&nbsp;</span><span class="sp-ch" style="--i:5">Y</span><span class="sp-ch" style="--i:6">o</span><span class="sp-ch" style="--i:7">u</span><span class="sp-ch" style="--i:8">r</span></span><span class="sp-c"><span class="sp-ch" style="--i:0">V</span><span class="sp-ch" style="--i:1">i</span><span class="sp-ch" style="--i:2">s</span><span class="sp-ch" style="--i:3">i</span><span class="sp-ch" style="--i:4">o</span><span class="sp-ch" style="--i:5">n</span></span></h1><span class="sp-l"></span></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<clipPath id="fc"><circle cx="12" cy="12" r="12"/></clipPath>
+<linearGradient id="solg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#19FB9B"/><stop offset="1" stop-color="#9945FF"/></linearGradient>
+<linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7D060"/><stop offset="1" stop-color="#D49A1C"/></linearGradient>
+<g id="gbc"><rect width="24" height="24" fill="#012169"/><path d="M0 0L24 24M24 0L0 24" stroke="#fff" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#C8102E" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#fff" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#C8102E" stroke-width="4"/></g>
+<symbol id="fl-gb" viewBox="0 0 24 24"><g clip-path="url(#fc)"><use href="#gbc"/></g></symbol>
+<symbol id="fl-us" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#fff"/><path d="M0 .9H24M0 4.6H24M0 8.3H24M0 12H24M0 15.7H24M0 19.4H24M0 23.1H24" stroke="#D62839" stroke-width="1.85"/><rect width="12.5" height="13" fill="#2B3A82"/><path d="M2 2.6H11.6M3.6 5.2H11.6M2 7.8H11.6M3.6 10.4H11.6" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="0 3.2"/></g></symbol>
+<symbol id="fl-jp" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="5.6" fill="#BC002D"/></g></symbol>
+<symbol id="fl-eu" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#1B3FA0"/><circle cx="12" cy="12" r="7" fill="none" stroke="#FFD21E" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="0 3.665"/></g></symbol>
+<symbol id="fl-ca" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#D80621"/><rect x="6" width="12" height="24" fill="#fff"/><path d="M12 5l1.3 3.2 2.4-.9-.8 3.6 2.1 1-3.9 2.5.3 2.6h-2.8l.3-2.6-3.9-2.5 2.1-1-.8-3.6 2.4.9z" fill="#D80621"/></g></symbol>
+<symbol id="fl-nz" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#012169"/><use href="#gbc" transform="scale(.5)"/><g fill="#CC142B" stroke="#fff" stroke-width=".5"><circle cx="17.5" cy="6" r="1.4"/><circle cx="20.5" cy="11" r="1.4"/><circle cx="17" cy="19" r="1.4"/><circle cx="14" cy="12.5" r="1.4"/></g></g></symbol>
+<symbol id="fl-au" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#00247D"/><use href="#gbc" transform="scale(.5)"/><path d="M6 14l1 2.3 2.4-.4-1.7 1.8 1.2 2.2-2.3-1.1-1.9 1.7.2-2.5-2.3-1.1 2.4-.5z" fill="#fff"/><g fill="#fff"><circle cx="18" cy="5.5" r="1"/><circle cx="20.5" cy="11" r="1"/><circle cx="16.5" cy="16" r="1"/><circle cx="19.5" cy="19.5" r="1"/><circle cx="14" cy="10.5" r=".8"/></g></g></symbol>
+<symbol id="fl-ch" viewBox="0 0 24 24"><g clip-path="url(#fc)"><rect width="24" height="24" fill="#D52B1E"/><path d="M12 5.5V18.5M5.5 12H18.5" stroke="#fff" stroke-width="4.2"/></g></symbol>
+<symbol id="i-xau" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="url(#goldg)"/><g fill="#FFF6D6"><path d="M4.6 17.2L5.8 13.6H10.2L11.4 17.2Z"/><path d="M12.6 17.2L13.8 13.6H18.2L19.4 17.2Z"/><path d="M8.6 12.9L9.8 9.3H14.2L15.4 12.9Z"/></g></symbol>
+<symbol id="i-xag" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#A9AAB6"/><g fill="#fff"><path d="M4.6 17.2L5.8 13.6H10.2L11.4 17.2Z"/><path d="M12.6 17.2L13.8 13.6H18.2L19.4 17.2Z"/><path d="M8.6 12.9L9.8 9.3H14.2L15.4 12.9Z"/></g></symbol>
+<symbol id="i-oil" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#12171D"/><path d="M12 5c2.7 3.3 4.4 5.6 4.4 7.9a4.4 4.4 0 0 1-8.8 0C7.6 10.600 9.300 8.300 12 5z" fill="#fff"/></symbol>
+<symbol id="i-nas" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#0A9BC9"/><text x="12" y="15.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" font-family="Arial,Helvetica,sans-serif">100</text></symbol>
+<symbol id="i-spx" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#D1242F"/><text x="12" y="15.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" font-family="Arial,Helvetica,sans-serif">500</text></symbol>
+<symbol id="i-btc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#F7931A"/><g transform="rotate(14 12 12)"><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" font-family="Arial,Helvetica,sans-serif">B</text><path d="M10.200 4.600v2.200M13.200 4.600v2.200M10.200 17.600v2.200M13.200 17.600v2.200" stroke="#fff" stroke-width="1.400" stroke-linecap="round"/></g></symbol>
+<symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1B1C27"/><g fill="url(#solg)"><path d="M7.800 7h9.400l-1.400 1.800H6.400z"/><path d="M6.400 11.100h9.400l1.400 1.800H7.800z"/><path d="M7.800 15.200h9.400l-1.400 1.800H6.400z"/></g></symbol>
+</defs></svg>
+<main>
+  <div class="top"><h1 id="title">Journal</h1><div class="topr"><button type="button" class="chip acbtn" id="acBtn" aria-haspopup="dialog" aria-label="Accounts"></button><button class="round shbtn" id="shareBtn" aria-label="Share card"><svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg></button></div></div>
+  <div id="chips" class="chips" role="group" aria-label="Filter by symbol" hidden></div>
+
+  <section id="s-journal">
+    <div id="jlimit"></div>
+    <div class="card hero">
+      <div id="hero"></div>
+    </div>
+    <div id="live"></div>
+    <dl id="stats" class="kv"></dl>
+    <div id="list"></div>
+    <div class="kyv">Keep your vision</div>
+  </section>
+
+  <section id="s-reports" hidden>
+    <div id="reports"></div>
+  </section>
+
+  <section id="s-dash" hidden data-dt="overview">
+    <div id="dlimit"></div>
+    <div class="dtabs" id="dtabs" role="tablist" aria-label="Dashboard sections">
+      <button type="button" role="tab" data-dtab="overview" aria-selected="true">Overview</button>
+      <button type="button" role="tab" data-dtab="charts" aria-selected="false">Data View</button>
+      <button type="button" role="tab" data-dtab="breakdown" aria-selected="false">Breakdown</button>
+      <button type="button" role="tab" data-dtab="trades" aria-selected="false">Trades</button>
+      <button type="button" role="tab" data-dtab="sessions" aria-selected="false">Sessions</button>
+    </div>
+    <div class="seg seg4 drange" id="drange" role="group" aria-label="Period">
+      <button type="button" data-dact="range" data-v="7" aria-pressed="false">7 days</button>
+      <button type="button" data-dact="range" data-v="30" aria-pressed="false">30 days</button>
+      <button type="button" data-dact="range" data-v="90" aria-pressed="true">90 days</button>
+      <button type="button" data-dact="range" data-v="all" aria-pressed="false">All time</button>
+    </div>
+    <div id="dmain"></div>
+    <div id="dtrades" class="dsec dt-trades"></div>
+    <div id="dgoals" class="dsec dt-overview"></div>
+    <div class="goal dsec dt-sessions" id="sess">
+      <div class="lbl">Market sessions</div>
+      <div class="sclock"><b id="sessTime">–</b><span id="sessDate"></span></div>
+      <div class="sutc" id="sessUtc"></div>
+      <div id="sessRows"></div>
+      <div class="snote" id="sessNote"></div>
+    </div>
+  </section>
+
+  <section id="s-data" hidden>
+    <div class="big" id="count"></div>
+    <div class="sub">saved on this phone</div>
+    <div class="sub" id="storeNote"></div>
+
+    <div class="panel" id="themePanel" style="margin-top:18px">
+      <h2 style="margin-top:0">Theme</h2>
+      <p>Changes the app colors and the opening intro.</p>
+      <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+        <button type="button" data-v="vision" aria-pressed="true">Vision</button>
+        <button type="button" data-v="morpho" aria-pressed="false">Morpho Classic</button>
+      </div>
+    </div>
+
+    <div class="panel" id="secPanel" style="margin-top:18px">
+      <h2 style="margin-top:0">Security</h2>
+      <p>The PIN keeps people out of the app screen. It does not encrypt your trades: anyone who can open this browser's developer tools or copy its storage can still read them, and the wrong-PIN wait can be reset the same way. For a protected copy, set a password when you export a backup. Forgot the PIN? You'll have to clear app data, which deletes your trades. Export a backup first.</p>
+      <div class="stack">
+        <div class="btns">
+          <button class="btn primary" type="button" id="pinSet">Set PIN</button>
+          <button class="btn" type="button" id="pinChg" hidden>Change PIN</button>
+          <button class="btn danger" type="button" id="pinOff" hidden>Remove PIN</button>
+        </div>
+        <div class="stack" id="secOpts" hidden>
+          <div class="fld"><span>Lock after leaving the app</span>
+            <div class="seg seg4" id="autoSeg" role="group" aria-label="Auto-lock">
+              <button type="button" data-v="0" aria-pressed="false">Instantly</button>
+              <button type="button" data-v="30" aria-pressed="false">30 sec</button>
+              <button type="button" data-v="60" aria-pressed="true">1 min</button>
+              <button type="button" data-v="300" aria-pressed="false">5 min</button>
+            </div>
+          </div>
+          <div class="btns"><button class="btn" type="button" id="lockNowBtn">Lock now</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h2 style="margin-top:0">Export backup</h2>
+      <p>Save all trades, accounts and settings as one JSON file. Send it to Drive, Telegram or Files to keep it safe. Background photos are not included.</p>
+      <label style="margin-bottom:12px">Backup password (optional)<input type="password" id="bkPass" autocomplete="new-password" placeholder="Leave empty for no encryption"></label>
+      <p class="muted" style="margin-top:-6px">With a password the file is encrypted (AES-256). If you forget it, the backup cannot be opened. The password is never saved.</p>
+      <div class="btns">
+        <button class="btn primary" id="exportBtn">Export JSON file</button>
+        <button class="btn" id="copyBtn">Copy as text</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Import backup</h2>
+      <p>Pick a JSON backup from this app (old CSV files still work). You can add the trades to your current ones, or restore everything including settings.</p>
+      <div class="btns">
+        <button class="btn" id="pickBtn">Choose backup file</button>
+        <input type="file" id="file" accept=".json,application/json,.csv,text/csv,text/plain" hidden>
+      </div>
+      <details style="margin-top:12px">
+        <summary class="muted" style="cursor:pointer; min-height:36px">Paste backup text instead</summary>
+        <textarea id="paste" placeholder="Paste the JSON backup text here"></textarea>
+        <div class="btns" style="margin-top:8px"><button class="btn" id="pasteBtn">Read pasted text</button></div>
+      </details>
+      <div id="importBox" hidden style="margin-top:14px"></div>
+    </div>
+
+    <div class="panel" id="goalPanel">
+      <h2 style="margin-top:0">Goals, limits and cards</h2>
+      <p>Your monthly goal shows in Reports and Data. A red warning shows at the top of the Dashboard when you near or pass your daily max loss. Account balance is used to show % results on share cards.</p>
+      <div class="stack">
+        <div class="seg" id="goalUnit" role="group" aria-label="Goal unit">
+          <button type="button" data-act="gunit" data-v="$" aria-pressed="true">$ amount</button>
+          <button type="button" data-act="gunit" data-v="%" aria-pressed="false">% of account</button>
+        </div>
+        <div class="g2">
+          <label>Monthly target<input type="number" id="g-val" step="any" min="0" inputmode="decimal" placeholder="1000"></label>
+          <label>Daily max loss ($)<input type="number" id="g-loss" step="any" min="0" inputmode="decimal" placeholder="Optional"></label>
+        </div>
+        <label>Account balance ($)<input type="number" id="g-bal" step="any" min="0" inputmode="decimal" placeholder="Optional for $ goals"></label>
+        <label>Name on cards<input id="g-name" maxlength="28" placeholder="Your name or @handle"></label>
+        <div class="btns"><button class="btn primary" type="button" id="goalSave">Save</button></div>
+      </div>
+    </div>
+
+    <div class="panel" id="fontPanel">
+      <h2 style="margin-top:0">Font</h2>
+      <p>Change the font of the whole app and the P&amp;L cards.</p>
+      <div class="seg" id="fontSeg" role="group" aria-label="Font">
+        <button type="button" class="fpv" data-act="font" data-v="default" aria-pressed="true" style="font-family:'Urbanist',sans-serif">Urbanist</button>
+        <button type="button" class="fpv" data-act="font" data-v="figtree" aria-pressed="false" style="font-family:'Figtree',sans-serif">Figtree</button>
+        <button type="button" class="fpv" data-act="font" data-v="plexmono" aria-pressed="false" style="font-family:'IBM Plex Mono',monospace;font-size:13px">IBM Plex Mono</button>
+      </div>
+    </div>
+
+    <div class="panel" id="bgPanel">
+      <h2 style="margin-top:0">Backgrounds</h2>
+      <p>Put your own picture behind the whole app and on the P&amp;L cards you share. Use the slider to make the picture darker or lighter.</p>
+      <div class="stack">
+        <div class="fld bgset"><span>App background</span>
+          <div class="bgprev" id="bgPrevApp" hidden><i></i></div>
+          <div class="bglvl"><small>Dark</small><input type="range" class="bgrange" id="bgLvlApp" min="0" max="100" step="1" aria-label="App background brightness"><small>Light</small></div>
+          <div class="btns"><button class="btn" type="button" id="bgPickApp">Choose image</button><button class="btn" type="button" id="bgClearApp">Remove</button></div>
+          <input type="file" id="bgFileApp" accept="image/*" hidden>
+        </div>
+        <div class="fld bgset"><span>P&amp;L card background</span>
+          <div class="bgprev" id="bgPrevCard" hidden><i></i></div>
+          <div class="bglvl"><small>Dark</small><input type="range" class="bgrange" id="bgLvlCard" min="0" max="100" step="1" aria-label="Card background brightness"><small>Light</small></div>
+          <div class="btns"><button class="btn" type="button" id="bgPickCard">Choose image / video</button><button class="btn" type="button" id="bgClearCard">Remove</button></div>
+          <input type="file" id="bgFileCard" accept="image/*,video/*" hidden>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Smooth mode</h2>
+      <p>Turns off decorative animation so the app stays fast on older phones. Auto decides for you.</p>
+      <div class="btns"><button class="btn" id="liteBtn"></button></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin-top:0">Clear everything</h2>
+      <p>Deletes every trade from this phone. Export a backup first.</p>
+      <button class="btn danger" id="clearBtn">Delete all trades</button>
+    </div>
+  </section>
+</main>
+
+<button class="fab" id="fab" aria-label="Add trade"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+
+
+<header class="site"><button type="button" class="menubtn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="logo"><span class="lt">Vision<small id="pgName"></small></span></span></header>
+<nav aria-label="Main">
+  <span class="navbg" aria-hidden="true"></span>
+  <span class="pill" id="pill" aria-hidden="true"></span>
+  <button data-act="tab" data-v="journal" aria-current="page"><svg class="rg" viewBox="0 0 46 46" aria-hidden="true"><g transform="rotate(45 23 23)"><rect class="bg" x="7" y="7" width="32" height="32" rx="7"/><rect class="tk" x="8.5" y="8.5" width="29" height="29" rx="5.5"/><rect class="a" x="8.5" y="8.5" width="29" height="29" rx="5.5" pathLength="100"/></g></svg>
+    <svg viewBox="0 0 24 24"><path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.2v-5.2H9.2V20H5a1 1 0 0 1-1-1z"/></svg>Home
+  </button>
+  <button data-act="tab" data-v="reports"><svg class="rg" viewBox="0 0 46 46" aria-hidden="true"><g transform="rotate(45 23 23)"><rect class="bg" x="7" y="7" width="32" height="32" rx="7"/><rect class="tk" x="8.5" y="8.5" width="29" height="29" rx="5.5"/><rect class="a" x="8.5" y="8.5" width="29" height="29" rx="5.5" pathLength="100"/></g></svg>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5v-2M12 14.5V9M15.5 14.5v-3.5"/></svg>Reports
+  </button>
+  <span class="navgap" aria-hidden="true"></span>
+  <button data-act="tab" data-v="dash"><svg class="rg" viewBox="0 0 46 46" aria-hidden="true"><g transform="rotate(45 23 23)"><rect class="bg" x="7" y="7" width="32" height="32" rx="7"/><rect class="tk" x="8.5" y="8.5" width="29" height="29" rx="5.5"/><rect class="a" x="8.5" y="8.5" width="29" height="29" rx="5.5" pathLength="100"/></g></svg>
+    <svg viewBox="0 0 24 24"><path d="M12 3.5 4.5 7.6v8.8L12 20.5l7.5-4.1V7.6z"/><path d="M4.5 7.6 12 11.7l7.5-4.1M12 11.7v8.8"/></svg>Data
+  </button>
+  <button data-act="tab" data-v="data"><svg class="rg" viewBox="0 0 46 46" aria-hidden="true"><g transform="rotate(45 23 23)"><rect class="bg" x="7" y="7" width="32" height="32" rx="7"/><rect class="tk" x="8.5" y="8.5" width="29" height="29" rx="5.5"/><rect class="a" x="8.5" y="8.5" width="29" height="29" rx="5.5" pathLength="100"/></g></svg>
+    <svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>Settings
+  </button>
+</nav>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="scrim" id="scrim"></div>
+  <div class="panelSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheethead">
+      <h2 id="sheetTitle">Add trade</h2>
+      <button class="x" id="closeSheet" aria-label="Close">&#10005;</button>
+    </div>
+    <form id="form" autocomplete="off">
+      <div class="g2" style="grid-template-columns:1.2fr 1fr">
+        <label>Date<button type="button" class="datebtn" id="f-datebtn" aria-haspopup="dialog"><span id="f-datetxt"></span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button><input type="hidden" id="f-date"></label>
+        <label>Symbol<input id="f-symbol" placeholder="XAUUSD" autocapitalize="characters" required></label>
+      </div>
+      <div id="symChips" class="chips" style="margin:-4px -18px 0"></div>
+      <div class="seg" role="group" aria-label="Side">
+        <button type="button" id="f-buy" aria-pressed="true">Buy</button>
+        <button type="button" id="f-sell" aria-pressed="false">Sell</button>
+      </div>
+      <div class="g3">
+        <label>Entry<input type="number" id="f-entry" step="any" inputmode="decimal"></label>
+        <label>Stop loss<input type="number" id="f-sl" step="any" inputmode="decimal"></label>
+        <label>Take profit<input type="number" id="f-tp" step="any" inputmode="decimal"></label>
+      </div>
+      <div class="g2">
+        <label>Exit price (optional)<input type="number" id="f-exit" step="any" inputmode="decimal"></label>
+        <label>Lot size (optional)<input type="number" id="f-lot" step="any" min="0" inputmode="decimal"></label>
+      </div>
+      <button type="button" class="chip livebtn" id="f-live" aria-pressed="false">Position (still open)</button>
+      <div class="calc" id="calc" aria-live="polite"></div>
+      <div id="closeBox">
+      <div class="seg" role="group" aria-label="Result type">
+        <button type="button" id="f-profit" aria-pressed="true">Profit</button>
+        <button type="button" id="f-loss" aria-pressed="false">Loss</button>
+      </div>
+      <label>Amount ($)<input type="number" id="f-amt" step="0.01" min="0" inputmode="decimal" required></label>
+      </div>
+      <div class="fld"><span>Session (optional)</span>
+        <div class="seg seg3" role="group" aria-label="Session">
+          <button type="button" data-act="sess" data-v="Asia" aria-pressed="false">Asia</button>
+          <button type="button" data-act="sess" data-v="London" aria-pressed="false">London</button>
+          <button type="button" data-act="sess" data-v="New York" aria-pressed="false">New York</button>
+        </div>
+      </div>
+      <label>Note<input id="f-note" placeholder="Setup, mistake, lesson"></label>
+      <button class="btn primary" type="submit" id="saveBtn">Save trade</button>
+      <button class="btn" type="button" id="shareTradeBtn" hidden>Share trade card</button>
+      <button class="btn danger" type="button" id="delBtn" hidden>Delete trade</button>
+    </form>
+  </div>
+</div>
+<div class="sheet" id="shSheet" hidden style="z-index:25">
+  <div class="scrim" id="shScrim"></div>
+  <div class="panelSheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+    <div class="sheethead">
+      <h2 id="shTitle">Share card</h2>
+      <button class="x" id="shClose" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="stack">
+      <div class="seg seg4" id="shKinds" role="group" aria-label="Period">
+        <button type="button" data-act="shkind" data-v="day" aria-pressed="true">Day</button>
+        <button type="button" data-act="shkind" data-v="week" aria-pressed="false">Week</button>
+        <button type="button" data-act="shkind" data-v="month" aria-pressed="false">Month</button>
+        <button type="button" data-act="shkind" data-v="all" aria-pressed="false">All</button>
+      </div>
+      <div class="shnav" id="shNav">
+        <button type="button" class="round" data-act="shstep" data-v="-1" aria-label="Previous">&#8249;</button>
+        <div class="ttl" id="shLabel"></div>
+        <button type="button" class="round" data-act="shstep" data-v="1" aria-label="Next">&#8250;</button>
+      </div>
+      <div class="seg" id="shHide" role="group" aria-label="Amounts">
+        <button type="button" data-act="shhide" data-v="0" aria-pressed="true">Show $</button>
+        <button type="button" data-act="shhide" data-v="1" aria-pressed="false">Hide $ (% and R)</button>
+      </div>
+      <div class="calc" id="shHint" aria-live="polite"></div>
+      <canvas id="shCanvas" width="1080" height="1350" aria-label="Share card preview"></canvas>
+      <div class="shopt">
+        <div class="shlbl">Style</div>
+        <div class="seg" id="shStyle" role="group" aria-label="Card style">
+          <button type="button" data-act="shstyle" data-v="term" aria-pressed="true">Terminal</button>
+          <button type="button" data-act="shstyle" data-v="classic" aria-pressed="false">Classic</button>
+        </div>
+        <div class="shlbl">Size</div>
+        <div class="seg" id="shRatio" role="group" aria-label="Card size">
+          <button type="button" data-act="shratio" data-v="11" aria-pressed="false">1:1</button>
+          <button type="button" data-act="shratio" data-v="43" aria-pressed="true">4:3</button>
+          <button type="button" data-act="shratio" data-v="21" aria-pressed="false">2:1</button>
+        </div>
+        <div class="shlbl">Corners</div>
+        <div class="seg" id="shRound" role="group" aria-label="Corner style">
+          <button type="button" data-act="shround" data-v="s" aria-pressed="true">Soft</button>
+          <button type="button" data-act="shround" data-v="m" aria-pressed="false">Round</button>
+        </div>
+      </div>
+      <div class="galwrap">
+        <div class="shlbl">Background</div>
+        <div class="gal" id="shGal" role="group" aria-label="Card background pictures"></div>
+        <div class="galnote" id="galNote"></div>
+      </div>
+      <div class="g2">
+        <button class="btn primary" type="button" id="shShare">Share</button>
+        <button class="btn" type="button" id="shSave">Save image</button>
+        <button class="btn" type="button" id="shSaveVid" hidden style="grid-column:1/-1">Save video</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sheet" id="acSheet" hidden>
+  <div class="scrim" id="acScrim"></div>
+  <div class="panelSheet" role="dialog" aria-modal="true" aria-labelledby="acTitle">
+    <div class="sheethead">
+      <h2 id="acTitle">Accounts</h2>
+      <button class="x" id="acClose" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="stack">
+      <div class="aclist" id="acList"></div>
+      <label>Account name<input id="ac-name" maxlength="24" placeholder="e.g. Live, Demo, Prop firm" autocomplete="off"></label>
+      <div class="g2">
+        <button class="btn primary" type="button" id="acAdd">Add account</button>
+        <button class="btn" type="button" id="acRename">Rename current</button>
+      </div>
+      <button class="btn danger" type="button" id="acDel">Delete this account</button>
+    </div>
+  </div>
+</div>
+<div class="dp" id="dp" hidden>
+  <div class="dpscrim" id="dpScrim"></div>
+  <div class="dpcard" role="dialog" aria-modal="true" aria-label="Choose date">
+    <div class="dphead">
+      <button type="button" class="dpnav" id="dpPrev" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="dpttl" id="dpTtl" aria-live="polite"></div>
+      <button type="button" class="dpnav" id="dpNext" aria-label="Next month"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="dpgrid" id="dpGrid"></div>
+    <div class="dpfoot">
+      <button type="button" class="dpbtn" id="dpToday">Today</button>
+      <button type="button" class="dpbtn" id="dpClose">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+
+
+
+
+
+
+<div id="lockscr" hidden role="dialog" aria-modal="true" aria-label="App lock">
+  <div class="lk-box">
+    <h2 id="lkT">Vision</h2>
+    <p id="lkS"></p>
+    <div id="lkDots" aria-hidden="true"></div>
+    <p id="lkE" role="alert"></p>
+    <div id="lkPad"></div>
+    <div class="lk-row">
+      <button type="button" class="btn primary" id="lkOk" hidden>Next</button>
+      <button type="button" class="link" id="lkX" hidden>Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<script src="extras.js"></script>
+
+</body>
+</html>
