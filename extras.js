@@ -46,8 +46,8 @@ function u12(ms,sec){var o={hour:'numeric',minute:'2-digit',hour12:true,timeZone
 function dur(ms){var m=Math.max(0,Math.floor(ms/60000)),d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;return d?d+'d '+h+'h':h?h+'h '+('0'+mi).slice(-2)+'m':mi+'m'}
 function tick(){
   try{
-    var box=$('s-dash');
-    if(!box||box.hidden||document.hidden||box.getAttribute('data-dt')!=='sessions')return;
+    var box=$('s-sessions');
+    if(!box||box.hidden||document.hidden)return;
     var now=Date.now(),d=new Date(now),html='',open=[];
     $('sessTime').textContent=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
     $('sessDate').textContent=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
@@ -68,7 +68,7 @@ function tick(){
       :'Your local time'+(tz?' ('+tz.replace(/_/g,' ')+')':'')+' with UTC beneath. Shown every day.';
   }catch(e){}
 }
-tick();setInterval(tick,1000);
+window.sessTick=tick;tick();setInterval(tick,1000);
 document.addEventListener('click',function(){setTimeout(tick,0)},true);
 document.addEventListener('visibilitychange',tick);
 }catch(e){}})();
@@ -77,7 +77,7 @@ document.addEventListener('visibilitychange',tick);
 try{
 
 (function(){try{
-var KEY='pnl-dtab',TABS=['overview','charts','breakdown','trades','sessions'];
+var KEY='pnl-dtab',TABS=['overview','charts','breakdown','trades'];
 var box=document.getElementById('s-dash'),strip=document.getElementById('dtabs');
 if(!box||!strip)return;
 function center(){var b=strip.querySelector('[aria-selected="true"]');if(b&&strip.clientWidth)strip.scrollLeft=b.offsetLeft-(strip.clientWidth-b.offsetWidth)/2}

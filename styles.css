@@ -1056,3 +1056,4 @@ html .crange{display:flex;justify-content:space-between;gap:2px;width:fit-conten
 html .crange button{height:34px;padding:0 15px;font-size:13px;font-weight:500;line-height:1;text-transform:uppercase;border:0;border-radius:999px;background:transparent;color:var(--muted)}
 html .crange button[aria-pressed="true"]{background:var(--s3,var(--line));color:var(--ink);font-weight:700;border:0}
 html[data-vt="vision"] .crange button[aria-pressed="true"]{background:#27395C}
+#s-sessions{padding-top:2px}

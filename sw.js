@@ -1,5 +1,5 @@
 /* Vision service worker. Bump VER on every release. */
-const VER = 'vision-v2', FONTS = 'vision-fonts-v1';
+const VER = 'vision-v3', FONTS = 'vision-fonts-v1';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'extras.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VER).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));

@@ -529,10 +529,10 @@ function movePill() { try { LG.sync(); } catch (err) { console.error(err); } }
 
 function render() {
   if (S.tab !== 'journal') CV.seen = [];
-  ['journal', 'reports', 'dash', 'data'].forEach(t => $('s-' + t).hidden = S.tab !== t);
+  ['journal', 'reports', 'dash', 'sessions', 'data'].forEach(t => $('s-' + t).hidden = S.tab !== t);
   document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.v === S.tab ? 'page' : 'false'));
-  $('title').textContent = { journal: 'Dashboard', reports: 'Reports', dash: 'Data', data: 'Settings' }[S.tab];
-  $('shareBtn').hidden = S.tab === 'data';
+  $('title').textContent = { journal: 'Dashboard', reports: 'Reports', dash: 'Data', sessions: 'Sessions', data: 'Settings' }[S.tab];
+  $('shareBtn').hidden = S.tab === 'data' || S.tab === 'sessions';
   movePill();
   renderChips();
   renderDashLimit();
@@ -540,6 +540,7 @@ function render() {
   if (S.tab === 'reports') renderReports();
   if (S.tab === 'dash') renderDash();
   if (S.tab === 'data') renderData();
+  if (S.tab === 'sessions' && window.sessTick) window.sessTick();
 }
 
 /* ---------- date picker ---------- */
